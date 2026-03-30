@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Form Builder Engine with Conditional Branching
 
-## Getting Started
+This project implements a robust, schema-driven Form Builder, inspired by the Server-Driven UI approaches like Valibot Schema Driven UI. It allows users to dynamically build complex, multi-page forms with conditional logic evaluation happening in real-time.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+The project is split into three main logical parts:
+1. **The Schema Definition (`src/schema/form.ts`)**: A strict structure mapping what a Form, Page, Field, Option, and Logic Rule looks like. This serves as the single source of truth for both the Builder and the Preview Engine.
+2. **The Builder (`src/components/builder/`)**: A visual drag-and-drop-esque environment where users construct the JSON schema. It communicates with a global Zustand store (`src/store/useFormStore.ts`).
+3. **The Preview Engine (`src/components/preview/`)**: A real-time state machine that takes the JSON schema and user inputs, evaluating conditional logic rules to determine whether a field should be seamlessly shown or hidden.
+
+## Data & Form Configuration
+
+The output of the builder is a deeply nested, executable JSON schema. The schema dictates the structure to render and inherently contains logic rules.
+
+Example snippet of a conditional rule:
+```json
+{
+  "rules": [
+    {
+      "id": "abc1234",
+      "fieldId": "xyz987",
+      "operator": "equals",
+      "value": "Yes"
+    }
+  ]
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Preview Engine & Core Logic
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The Preview Component uses an internal hashmap mechanism `responses: Record<string, any>` to keep track of user input. 
+As the user inputs data, `isFieldVisible(field)` runs through every field's attached dependency rules against the `responses` state.
+If `isFieldVisible()` returns true, standard React re-rendering instantly displays the field without any flashes or layout thrashing.
+Conversely, if the condition becomes false, it disappears.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup & Running
 
-## Learn More
+This is a Next.js App Router project leveraging Tailwind CSS and shadcn/ui.
 
-To learn more about Next.js, take a look at the following resources:
+1. Ensure you have Node installed (v18+).
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Key Technologies
+- **Next.js**: Core framework
+- **Zustand**: Global state management
+- **Valibot**: Schema declarations
+- **Tailwind CSS + shadcn/ui**: Styling & UI components
+- **Lucide React**: Iconography
+# flow-automate
